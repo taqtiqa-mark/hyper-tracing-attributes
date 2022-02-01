@@ -1,0 +1,63 @@
+warning: unused import: `abort_call_site`
+ --> src/server_send/analyze.rs
+  |
+  | use proc_macro_error::{abort, abort_call_site};
+  |                               ^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `FromMeta`
+ --> src/server_send/parsed.rs
+  |
+  | use darling::{FromMeta};
+  |               ^^^^^^^^
+
+warning: field is never read: `level`
+  --> src/server_send/parsed.rs
+   |
+   |     level: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: field is never read: `name`
+  --> src/server_send/parsed.rs
+   |
+   |     name: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: field is never read: `skip`
+  --> src/server_send/parsed.rs
+   |
+   |     skip: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: field is never read: `fields`
+  --> src/server_send/parsed.rs
+   |
+   |     fields: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function is never used: `skip_params`
+  --> src/server_send/parsed.rs
+   |
+   |     fn skip_params(&self) -> Vec<String> {
+   |        ^^^^^^^^^^^
+
+warning: associated function is never used: `fields_params`
+  --> src/server_send/parsed.rs
+   |
+   |     fn fields_params(&self) -> Vec<String> {
+   |        ^^^^^^^^^^^^^
+
+trace, "B", skip(self)
+3
+Args { vars: [Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "trace", span: #0 bytes(83..88) }, arguments: None }] } }), Lit(ExprLit { attrs: [], lit: Str(LitStr { token: "B" }) }), Call(ExprCall { attrs: [], func: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "skip", span: #0 bytes(95..99) }, arguments: None }] } }), paren_token: Paren, args: [Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "self", span: #0 bytes(100..104) }, arguments: None }] } })] })] }
+error: this attribute takes from one to four arguments
+
+         = help: use `#[server_send(level=trace, name="Name", skip="a, b")]`
+
+ --> tests/ui/server_send/error/has-expression-arguments.rs:4:15
+  |
+4 | #[server_send(trace, "B", skip(self))]
+  |               ^^^^^

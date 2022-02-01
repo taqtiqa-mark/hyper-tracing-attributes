@@ -6,7 +6,7 @@ use syn::{
     Expr, ItemFn,
 };
 
-use crate::Ast;
+use crate::contracts::Ast;
 
 pub fn analyze(ast: Ast) -> Model {
     let mut preconditions = vec![];
@@ -85,6 +85,7 @@ mod tests {
         assert!(model.item.attrs.is_empty());
     }
 
+    // Ensure attributes unrelated to this proc-macro are not removed or reordered
     #[test]
     fn non_dsl_attributes_are_preserved() {
         let model = analyze(parse_quote!(

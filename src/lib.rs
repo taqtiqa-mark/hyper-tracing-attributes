@@ -1,22 +1,33 @@
 use proc_macro::TokenStream;
 use proc_macro_error::proc_macro_error;
 
-use analyze::{analyze, Model};
-use codegen::codegen;
-use lower::{lower, Ir};
-use parse::{parse, Ast};
+//#[cfg(feature = "debug")]
+// #[macro_use]
+use tracing::{event, Level};
 
-mod analyze;
-mod codegen;
-mod lower;
-mod parse;
+mod contracts;
+mod server_send;
 
 #[proc_macro_attribute]
 #[proc_macro_error]
 pub fn contracts(args: TokenStream, item: TokenStream) -> TokenStream {
-    let ast = parse(args.into(), item.into());
-    let model = analyze(ast);
-    let ir = lower(model);
-    let rust = codegen(ir);
+    let ast = contracts::parse(args.into(), item.into());
+    let model = contracts::analyze(ast);
+    let ir = contracts::lower(model);
+    let rust = contracts::codegen(ir);
+    event!(Level::DEBUG, "{}", rust);
+    eprintln!("{}",rust);
+    rust.into()
+}
+
+#[proc_macro_attribute]
+#[proc_macro_error]
+pub fn server_send(args: TokenStream, item: TokenStream) -> TokenStream {
+    let ast = server_send::parse(args.into(), item.into());
+    let model = server_send::analyze(ast);
+    let ir = server_send::lower(model);
+    let rust = server_send::codegen(ir);
+    event!(Level::DEBUG, "{}", rust);
+    eprintln!("{}",rust);
     rust.into()
 }

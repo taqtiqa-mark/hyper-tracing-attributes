@@ -1,7 +1,7 @@
 use quote::quote;
 use syn::{Expr, ItemFn};
 
-use crate::Model;
+use crate::contracts::Model;
 
 pub fn lower(model: Model) -> Ir {
     let Model {

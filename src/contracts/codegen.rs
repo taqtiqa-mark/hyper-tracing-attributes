@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_quote, ItemFn, Stmt};
 
-use crate::{lower::Assertion, Ir};
+use crate::contracts::{lower::Assertion, Ir};
 
 pub type Rust = TokenStream;
 
