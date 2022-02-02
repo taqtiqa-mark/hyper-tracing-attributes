@@ -20,11 +20,13 @@ pub fn lower(model: Model) -> Ir {
     Ir { assertions, item }
 }
 
+#[derive(Debug)]
 pub struct Ir {
     pub assertions: Vec<Assertion>,
     pub item: ItemFn,
 }
 
+#[derive(Debug)]
 pub struct Assertion {
     pub expr: Expr,
     pub message: String,

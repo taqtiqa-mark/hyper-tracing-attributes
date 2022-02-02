@@ -4,11 +4,11 @@ use hyper_tracing_attributes::server_send;
 use tracing::Level;
 
 #[allow(unused_variables)]
-#[server_send(level = Level::DEBUG, name = "Some", skip = "input")]
+#[server_send(level = Level::INFO, name = "Some", skip = [i,n])]
 #[trace_field(var = 0)]
-fn f(input: u32) -> u32 {
-        let var = input;
-        input
+fn f(i: u32, n: u32, put: u32) -> u32 {
+        let var = i;
+        put
     }
 
 #[tokio::main]
@@ -29,5 +29,5 @@ async fn main() {
         .event_format(format)
         .init();
 
-    f(4);
+    f(4,3,2);
 }

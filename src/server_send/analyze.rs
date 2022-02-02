@@ -11,6 +11,7 @@ use crate::server_send::Ast;
 pub fn analyze(ast: Ast) -> Model {
     let mut fields = vec![];
     let mut level: syn::ExprPath = syn::parse_quote!(Level::DEBUG);
+    let mut skip: syn::ExprArray = syn::parse_quote!([]);
 
     let mut item = ast;
     let attrs = &mut item.attrs;
@@ -24,6 +25,7 @@ pub fn analyze(ast: Ast) -> Model {
                     let span = attr.tokens.span();
                     if id == "server_send" {
                         get_level(&mut level, span, attr.tokens.clone());
+                        get_skip(&mut skip, span, attr.tokens.clone());
                     }
                     if id == "trace_field" {
                         get_field(&mut fields, span, attr.tokens);
@@ -35,9 +37,10 @@ pub fn analyze(ast: Ast) -> Model {
     }
 
     Model {
-        level,
         fields,
         item,
+        level,
+        skip,
     }
 }
 
@@ -67,6 +70,22 @@ fn get_level(level: &mut syn::ExprPath, span: proc_macro2::Span, tokens: proc_ma
             help = "example: `#[server_send(level = tracing::Level::INFO)]`")
     }
 }
+
+fn get_skip(skip: &mut syn::ExprArray, span: proc_macro2::Span, tokens: proc_macro2::TokenStream) {
+
+    if let Ok(arg) = syn::parse2::<AttributeArgument>(tokens) {
+        if let syn::Expr::Array(ary) = *(arg.expr).right {
+            *skip = ary;
+        }
+    } else {
+        // ../tests/ui/server_send/error/trace_field-is-not-an-assignment-expression.rs
+        abort!(
+            span,
+            "expected an assigned expression as argument";
+            help = "example: `#[server_send(skip = [a,b,c])]`")
+    }
+}
+
 struct AttributeArgument {
     expr: syn::ExprAssign,
 }
@@ -82,10 +101,12 @@ impl Parse for AttributeArgument {
     }
 }
 
+#[derive(Debug)]
 pub struct Model {
-    pub level: syn::ExprPath,
     pub fields: Vec<syn::ExprAssign>,
     pub item: ItemFn,
+    pub level: syn::ExprPath,
+    pub skip: syn::ExprArray,
 }
 
 #[cfg(test)]
@@ -116,6 +137,19 @@ mod tests {
 
         let expected: syn::ExprPath = parse_quote!(Level::DEBUG);
         assert_eq!(expected, model.level);
+
+        assert!(model.item.attrs.is_empty());
+    }
+
+    #[test]
+    fn can_extract_skip() {
+        let model = analyze(parse_quote!(
+            #[server_send(skip=[x])]
+            fn f(x: bool) {}
+        ));
+
+        let expected: syn::ExprArray = parse_quote!([x]);
+        assert_eq!(expected, model.skip);
 
         assert!(model.item.attrs.is_empty());
     }

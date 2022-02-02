@@ -1,3 +1,50 @@
+warning: unused variable: `meta_args`
+  --> src/lib.rs
+   |
+   |     let mut meta_args = syn::parse_macro_input!(meta as crate::server_send::parse::Args);
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_meta_args`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> src/lib.rs
+   |
+   |     let mut meta_args = syn::parse_macro_input!(meta as crate::server_send::parse::Args);
+   |         ----^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
+Ast: ItemFn {
+    attrs: [],
+    vis: Inherited,
+    sig: Signature {
+        constness: None,
+        asyncness: None,
+        unsafety: None,
+        abi: None,
+        fn_token: Fn,
+        ident: Ident {
+            ident: "f",
+            span: #0 bytes(58..59),
+        },
+        generics: Generics {
+            lt_token: None,
+            params: [],
+            gt_token: None,
+            where_clause: None,
+        },
+        paren_token: Paren,
+        inputs: [],
+        variadic: None,
+        output: Default,
+    },
+    block: Block {
+        brace_token: Brace,
+        stmts: [],
+    },
+}
 error: no contracts were specified
 
          = help: add a `#[precondition]`

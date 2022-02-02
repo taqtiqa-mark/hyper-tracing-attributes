@@ -1,6 +1,24 @@
+warning: unused variable: `meta_args`
+  --> src/lib.rs
+   |
+   |     let mut meta_args = syn::parse_macro_input!(meta as crate::server_send::parse::Args);
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_meta_args`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: variable does not need to be mutable
+  --> src/lib.rs
+   |
+   |     let mut meta_args = syn::parse_macro_input!(meta as crate::server_send::parse::Args);
+   |         ----^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` on by default
+
 error: this attribute takes from one to three assign arguments
 
-         = help: use `#[server_send(level=trace, name="Name", skip="a, b")]`
+         = help: use `#[server_send(level=Level::WARN, name="Name", skip=[a, b])]`
 
  --> tests/ui/server_send/error/has-other-arguments.rs:4:15
   |

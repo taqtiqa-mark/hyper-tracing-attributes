@@ -46,6 +46,7 @@ pub fn analyze(ast: Ast) -> Model {
     }
 }
 
+#[derive(Debug)]
 struct AttributeArgument {
     expr: Expr,
 }
@@ -61,6 +62,7 @@ impl Parse for AttributeArgument {
     }
 }
 
+#[derive(Debug)]
 pub struct Model {
     pub preconditions: Vec<Expr>,
     pub item: ItemFn,

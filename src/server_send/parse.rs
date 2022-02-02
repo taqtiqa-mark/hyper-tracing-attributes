@@ -2,9 +2,9 @@
 
 use proc_macro2::TokenStream;
 use proc_macro_error::{abort, abort_call_site};
-use syn::{Expr, Item, ItemFn};
+use syn::{Expr, Item};
 
-pub type Ast = ItemFn;
+pub type Ast = syn::ItemFn;
 
 // Attribute arguments that are assignment expressions.
 #[derive(Debug)]
@@ -29,9 +29,7 @@ impl syn::parse::Parse for Args {
 // proc_macro::TokenStream.
 pub fn parse_args(metadata: proc_macro::TokenStream) -> proc_macro::TokenStream {
     const ERROR: &str = "this attribute takes from one to three assign arguments";
-    const HELP: &str = "use `#[server_send(level=Level::WARN, name=\"Name\", skip=\"a, b\")]`";
-
-    // eprintln!("{:?}", metadata);
+    const HELP: &str = "use `#[server_send(level=Level::WARN, name=\"Name\", skip=[a, b])]`";
 
     if metadata.is_empty() {
         // ../tests/ui/server_send/error/has-no-arguments.rs

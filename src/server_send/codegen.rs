@@ -10,7 +10,7 @@ pub type Rust = TokenStream;
 
 pub fn codegen(ir: Ir) -> Rust {
 
-    let Ir { fields, item, level } = ir;
+    let Ir { fields, item, level, skip } = ir;
 
     let ItemFn {
         attrs,
@@ -21,13 +21,21 @@ pub fn codegen(ir: Ir) -> Rust {
 
     let flds: Vec<syn::ExprAssign> = fields.into_iter().map(|p| p.expr).collect();
     let stmts = &block.stmts;
+    // let skp: Vec<syn::Lit> = skip.elems.into_iter().map(|s| {
+    //     let syn::ExprLit { attrs, lit} = s;
+    //     lit }).collect();
+    let skp: Vec<syn::Expr> = skip.elems.into_iter().map(|s| s).collect();
 
     syn::parse_quote! {
         #(#attrs)*
-        #[cfg_attr(feature = "trace",
+        #[cfg_attr(feature = "tracing",
             tracing::instrument(level = #level,
-                                skip(input),
-                                fields( #(#flds ,)*
+                                skip(
+                                    #(#skp ,)*
+                                ),
+                                fields( //Custom
+                                        #(#flds ,)*
+                                        //
                                         otel.name           = "Server::parse",
 
                                 )
@@ -62,10 +70,12 @@ mod tests {
                 expr: pq
             }];
         let l = syn::parse_quote!(Level::TRACE);
+        let s = syn::parse_quote!([a,b,c]);
         let ir = Ir {
                 fields: f,
                 item: i,
-                level: l
+                level: l,
+                skip: s
             };
 
         let rust = codegen(ir);

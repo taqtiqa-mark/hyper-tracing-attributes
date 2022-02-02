@@ -4,9 +4,10 @@ use crate::server_send::Model;
 
 pub fn lower(model: Model) -> Ir {
     let Model {
-        level,
         fields,
         item,
+        level,
+        skip,
     } = model;
 
     let fields = fields
@@ -18,14 +19,15 @@ pub fn lower(model: Model) -> Ir {
 
     let level = level;
 
-    Ir { level, fields, item }
+    Ir { fields, item, level, skip }
 }
 
 #[derive(Debug)]
 pub struct Ir {
-    pub level: syn::ExprPath,
     pub fields: Vec<Field>,
     pub item: ItemFn,
+    pub level: syn::ExprPath,
+    pub skip: syn::ExprArray
 }
 
 #[derive(Debug)]
@@ -43,11 +45,12 @@ mod tests {
     impl Model {
         fn stub() -> Self {
             Self {
-                level: parse_quote!(Level::TRACE),
                 fields: vec![],
                 item: parse_quote!(
                     fn f() {}
                 ),
+                level: parse_quote!(Level::TRACE),
+                skip: parse_quote!([]),
             }
         }
     }
@@ -77,5 +80,18 @@ mod tests {
         let level = ir.level;
         let expected: syn::ExprPath = parse_quote!(Level::DEBUG);
         assert_eq!(expected, level);
+    }
+
+    #[test]
+    fn produces_expression_for_skip() {
+        // Setup empty skip list
+        let mut model = Model::stub();
+        model.skip = parse_quote!([a,b,c]);
+
+        let ir = lower(model);
+
+        let skip = ir.skip;
+        let expected: syn::ExprArray = parse_quote!([a,b,c]);
+        assert_eq!(expected, skip);
     }
 }
