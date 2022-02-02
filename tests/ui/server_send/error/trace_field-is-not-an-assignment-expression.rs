@@ -4,4 +4,4 @@ use hyper_tracing_attributes::server_send;
 #[trace_field(b)]
 fn f() {}
 
-fn main() { f() }
+fn main() { }

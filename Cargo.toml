@@ -51,6 +51,9 @@ default = []
 #         ]
 
 [[test]]
-name = "ui"
-path = "tests/ui.rs"
-# required-features = ["debug"]
+name = "contracts"
+path = "tests/contracts.rs"
+
+[[test]]
+name = "server_send"
+path = "tests/server_send.rs"

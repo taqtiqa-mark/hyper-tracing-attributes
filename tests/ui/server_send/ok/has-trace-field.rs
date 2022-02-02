@@ -1,16 +1,15 @@
+#![allow(unused_imports)]
+
 use hyper_tracing_attributes::server_send;
+use tracing::Level;
 
-#[server_send(level = "trace", name = "Some", skip = "input")]
+#[allow(unused_variables)]
+#[server_send(level = Level::DEBUG, name = "Some", skip = "input")]
 #[trace_field(var = 0)]
-fn f(input: u32) {
-    eprintln!("{}", input);
-}
-
-// fn f(input : u32)
-// {
-//     assert! (input % 2 == 0, "violation of precondition `input % 2 == 0`") ;
-//     { }
-// }
+fn f(input: u32) -> u32 {
+        let var = input;
+        input
+    }
 
 #[tokio::main]
 async fn main() {
@@ -30,5 +29,5 @@ async fn main() {
         .event_format(format)
         .init();
 
-    f(4)
+    f(4);
 }

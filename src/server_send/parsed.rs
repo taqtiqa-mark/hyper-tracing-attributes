@@ -1,7 +1,9 @@
+#![allow(dead_code)]
+
 use proc_macro2::TokenStream;
 use proc_macro_error::{abort, abort_call_site};
 use syn::{Expr, Item, ItemFn};
-use darling::{FromMeta};
+use darling;
 
 pub type Ast = ItemFn;
 
@@ -104,6 +106,7 @@ impl syn::parse::Parse for Args {
         })
     }
 }
+
 // Parse attribute arguments then count.
 // This utility/no-op function is required by the fact
 // `syn::parse_macro_input!` must be called in a function that returns
@@ -112,7 +115,7 @@ pub fn parse_args(metadata: proc_macro::TokenStream) -> proc_macro::TokenStream 
     const ERROR: &str = "this attribute takes from one to four arguments";
     const HELP: &str = "use `#[server_send(level=trace, name=\"Name\", skip=\"a, b\")]`";
 
-    eprintln!("{}", metadata);
+    // eprintln!("{:?}", metadata);
 
     if metadata.is_empty() {
         // ../tests/ui/server_send/error/has-no-arguments.rs
@@ -123,11 +126,6 @@ pub fn parse_args(metadata: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let args = syn::parse_macro_input!(md as Args);
 
     eprintln!("{}",args.vars.len());
-
-    // if args.vars.len() > 3 {
-    //     // ../tests/ui/server_send/error/has-too-many-arguments.rs
-    //     abort_call_site!(ERROR; help = HELP)
-    // }
 
     eprintln!("{:?}", args);
 
@@ -144,49 +142,12 @@ pub fn parse_args(metadata: proc_macro::TokenStream) -> proc_macro::TokenStream 
             }
         }
     }
-    // let expr: syn::Expr = syn::parse2(metadata.clone().into()).expect("ExprAssign parsing");
-
-    // eprintln!("{:?}", expr);
-
-    // let attr_args = syn::parse_macro_input!(metadata as syn::AttributeArgs);
-
-    // eprintln!("{:?}", attr_args);
-
-    // // let attr_args: syn::NestedMeta = args.vars.into();
-    // let attrs: TaskAttributes =
-    //     TaskAttributes::from_list(&attr_args).expect("#[server_send(...)] could not be parsed!");
-
-    // eprintln!("{:?}", attrs);
-
-    // eprintln!("skip_params: {:#?}", attrs.skip_params());
-    // eprintln!("fields_params: {:#?}", attrs.fields_params());
-
-    // if attr_args.len() > 4 {
-    //     // ../tests/ui/server_send/error/has-too-many-arguments.rs
-    //     abort_call_site!(ERROR; help = HELP)
-    // }
-
     proc_macro::TokenStream::from(quote::quote! {fn dummy(){}})
 }
 
 pub fn parse(metadata: TokenStream, item: TokenStream) -> Ast {
 
     parse_args(metadata.clone().into());
-
-    // let expr = syn::parse::<Expr>(metadata.clone().into()).expect("Expr parsing");
-    // match expr {
-    //     Expr::Array(expr) => {
-    //         // ../tests/ui/server_send/error/has-expression-arguments.rs
-    //         abort!(expr, ERROR; help = HELP)
-    //     }
-    //     Expr::Assign(_expr) => {
-    //         parse_args(metadata.into());
-    //     }
-    //     _ => {
-    //         // ../tests/ui/server_send/error/has-other-arguments.rs
-    //         abort!(expr, ERROR; help = HELP)
-    //     }
-    // }
 
     match syn::parse2::<Item>(item) {
         Ok(Item::Fn(item)) => item,
@@ -205,41 +166,20 @@ pub fn parse(metadata: TokenStream, item: TokenStream) -> Ast {
 // #[cfg(test)]
 // mod tests {
 //     use quote::quote;
-//     use proc_macro_error::proc_macro_error;
 
 //     use super::*;
 
-    // #[test]
-    // // #[proc_macro_attribute]
-    // // #[proc_macro_error(allow_not_macro)]
-    // fn valid_minimal_syntax() {
-    //     parse_args(
-    //         quote!(
-    //             #[inline]
-    //             #[server_send(level = info)]
-    //             fn even_to_odd(x: u32) -> u32 {
-    //                 x + 1
-    //             }
-    //         ).into()
-    //     );
-    //     //proc_macro::TokenStream::from(quote::quote!{fn dummy(){}})
-    // }
-
 //     #[test]
-//     #[proc_macro_attribute]
-//     //#[proc_macro_error(allow_not_macro)]
-//     fn valid_instrument_syntax() {
-//         parse_args(
+//     fn valid_syntax() {
+//         parse(
+//             quote!(),
 //             quote!(
 //                 #[inline]
-//                 #[server_send(level = trace, name = "Neat", skip = "x,y")]
-//                 fn some_addition(x: u32, y: u32) -> u32 {
-//                     x + y
+//                 #[server_send(level = debug)]
+//                 fn even_to_odd(x: u32) -> u32 {
+//                     x + 1
 //                 }
-//             ).into()
+//             ),
 //         );
-//         //proc_macro::TokenStream::from(quote::quote!{fn dummy(){}})
 //     }
 // }
-
-// Args { vars: {ExprAssign { attrs: [], left: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "target", span: #0 bytes(94..100) }, arguments: None }] } }), eq_token: Eq, right: Lit(ExprLit { attrs: [], lit: Str(LitStr { token: "bulls-eye" }) }) }, ExprAssign { attrs: [], left: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "level", span: #0 bytes(58..63) }, arguments: None }] } }), eq_token: Eq, right: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "trace", span: #0bytes(64..69) }, arguments: None }] } }) }, ExprAssign { attrs: [], left: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "name", span: #0 bytes(71..75) }, arguments: None }] } }), eq_token: Eq, right: Lit(ExprLit { attrs: [], lit: Str(LitStr { token: "B" }) }) }, ExprAssign { attrs: [], left: Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "skip", span: #0 bytes(81..85) }, arguments: None }] } }), eq_token: Eq, right: Array(ExprArray { attrs: [], bracket_token: Bracket, elems: [Path(ExprPath { attrs: [], qself: None, path: Path { leading_colon: None, segments: [PathSegment { ident: Ident { ident: "self", span: #0 bytes(87..91) }, arguments: None }] } })] }) }} }

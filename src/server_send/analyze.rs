@@ -1,4 +1,4 @@
-use proc_macro_error::{abort, abort_call_site};
+use proc_macro_error::{abort};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
@@ -9,43 +9,64 @@ use syn::{
 use crate::server_send::Ast;
 
 pub fn analyze(ast: Ast) -> Model {
-    let mut trace_fields = vec![];
+    let mut fields = vec![];
+    let mut level: syn::ExprPath = syn::parse_quote!(Level::DEBUG);
 
     let mut item = ast;
     let attrs = &mut item.attrs;
-
-    eprintln!("{:?}", attrs);
-
     for index in (0..attrs.len()).rev() {
+        eprintln!("{:#?}", attrs[index]);
         if let Some(ident) = attrs[index].path.get_ident() {
-            if ident.to_string().as_str() == "trace_field" {
-                let attr = attrs.remove(index);
-                let span = attr.tokens.span();
-
-                if let Ok(arg) = syn::parse2::<AttributeArgument>(attr.tokens) {
-                    trace_fields.push(arg.expr);
-                } else {
-                    // ../tests/ui/server_send/error/trace_field-is-not-an-assignment-expression.rs
-                    abort!(
-                        span,
-                        "expected an assignment expression as argument";
-                        help = "example: `#[trace_field(b = tracing::field::Empty)]`")
+            let id = ident.to_string();
+            match id.as_str() {
+                "server_send" | "trace_field" => {
+                    let attr = attrs.remove(index);
+                    let span = attr.tokens.span();
+                    if id == "server_send" {
+                        get_level(&mut level, span, attr.tokens.clone());
+                    }
+                    if id == "trace_field" {
+                        get_field(&mut fields, span, attr.tokens);
+                    }
                 }
+                _ => {}
             }
         }
     }
 
-    // if trace_fields.is_empty() {
-    //     // ../tests/ui/server_send/error/zero-trace-feilds.rs
-    //     abort_call_site!(
-    //         "no trace fields were specified";
-    //         help = "add a `#[trace_field]`"
-    //     )
-    // }
-
-    Model { trace_fields, item }
+    Model {
+        level,
+        fields,
+        item,
+    }
 }
 
+fn get_field(fields: &mut Vec<syn::ExprAssign>, span: proc_macro2::Span, tokens: proc_macro2::TokenStream) {
+    if let Ok(arg) = syn::parse2::<AttributeArgument>(tokens) {
+        fields.push(arg.expr);
+    } else {
+        // ../tests/ui/server_send/error/trace_field-is-not-an-assignment-expression.rs
+        abort!(
+            span,
+            "expected an assigned expression as argument";
+            help = "example: `#[trace_field(argument = 0)]`")
+    }
+}
+
+fn get_level(level: &mut syn::ExprPath, span: proc_macro2::Span, tokens: proc_macro2::TokenStream) {
+
+    if let Ok(arg) = syn::parse2::<AttributeArgument>(tokens) {
+        if let syn::Expr::Path(path) = *(arg.expr).right {
+            *level = path;
+        }
+    } else {
+        // ../tests/ui/server_send/error/trace_field-is-not-an-assignment-expression.rs
+        abort!(
+            span,
+            "expected an assigned expression as argument";
+            help = "example: `#[server_send(level = tracing::Level::INFO)]`")
+    }
+}
 struct AttributeArgument {
     expr: syn::ExprAssign,
 }
@@ -62,7 +83,8 @@ impl Parse for AttributeArgument {
 }
 
 pub struct Model {
-    pub trace_fields: Vec<syn::ExprAssign>,
+    pub level: syn::ExprPath,
+    pub fields: Vec<syn::ExprAssign>,
     pub item: ItemFn,
 }
 
@@ -80,7 +102,20 @@ mod tests {
         ));
 
         let expected: &[syn::ExprAssign] = &[parse_quote!(x=0)];
-        assert_eq!(expected, model.trace_fields);
+        assert_eq!(expected, model.fields);
+
+        assert!(model.item.attrs.is_empty());
+    }
+
+    #[test]
+    fn can_extract_level() {
+        let model = analyze(parse_quote!(
+            #[server_send(level=Level::DEBUG)]
+            fn f(x: bool) {}
+        ));
+
+        let expected: syn::ExprPath = parse_quote!(Level::DEBUG);
+        assert_eq!(expected, model.level);
 
         assert!(model.item.attrs.is_empty());
     }
@@ -90,7 +125,7 @@ mod tests {
     fn non_dsl_attributes_are_preserved() {
         let model = analyze(parse_quote!(
             #[a]
-            #[trace_field(x=1)]
+            #[trace_field(x=0)]
             #[b]
             fn f(x: bool) {}
         ));

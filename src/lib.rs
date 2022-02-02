@@ -3,7 +3,7 @@ use proc_macro_error::proc_macro_error;
 
 //#[cfg(feature = "debug")]
 // #[macro_use]
-use tracing::{event, Level};
+// use tracing::{event, Level};
 
 mod contracts;
 mod server_send;
@@ -15,7 +15,6 @@ pub fn contracts(args: TokenStream, item: TokenStream) -> TokenStream {
     let model = contracts::analyze(ast);
     let ir = contracts::lower(model);
     let rust = contracts::codegen(ir);
-    event!(Level::DEBUG, "{}", rust);
     eprintln!("{}",rust);
     rust.into()
 }
@@ -27,7 +26,6 @@ pub fn server_send(args: TokenStream, item: TokenStream) -> TokenStream {
     let model = server_send::analyze(ast);
     let ir = server_send::lower(model);
     let rust = server_send::codegen(ir);
-    event!(Level::DEBUG, "{}", rust);
     eprintln!("{}",rust);
     rust.into()
 }
