@@ -7,6 +7,7 @@ pub fn lower(model: Model) -> Ir {
         fields,
         item,
         level,
+        name,
         skip,
     } = model;
 
@@ -19,7 +20,7 @@ pub fn lower(model: Model) -> Ir {
 
     let level = level;
 
-    Ir { fields, item, level, skip }
+    Ir { fields, item, level, name, skip }
 }
 
 #[derive(Debug)]
@@ -27,6 +28,7 @@ pub struct Ir {
     pub fields: Vec<Field>,
     pub item: ItemFn,
     pub level: syn::ExprPath,
+    pub name: syn::ExprLit,
     pub skip: syn::ExprArray
 }
 
@@ -50,6 +52,7 @@ mod tests {
                     fn f() {}
                 ),
                 level: parse_quote!(Level::TRACE),
+                name: parse_quote!("server_send"),
                 skip: parse_quote!([]),
             }
         }

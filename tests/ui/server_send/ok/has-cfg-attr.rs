@@ -1,14 +1,15 @@
-use http_tracing_attributes::contracts;
+#![allow(unused_imports)]
 
-#[contracts]
-#[precondition(input % 2 == 0)]
-fn f(input: u32) {}
+use http_tracing_attributes::server_send;
+use tracing::Level;
 
-// fn f(input : u32)
-// {
-//     assert! (input % 2 == 0, "violation of precondition `input % 2 == 0`") ;
-//     { }
-// }
+#[allow(unused_variables)]
+#[cfg_attr(feature = "tracing", server_send(level = Level::INFO))]
+#[cfg_attr(feature = "tracing", trace_field(var = 0))]
+fn f(i: u32, n: u32, put: u32) -> u32 {
+        let var = i;
+        put
+    }
 
 #[tokio::main]
 async fn main() {
@@ -28,5 +29,5 @@ async fn main() {
         .event_format(format)
         .init();
 
-    f(4)
+    f(4,3,2);
 }

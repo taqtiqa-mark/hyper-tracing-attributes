@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "hyper-tracing-attributes"
+name = "http-tracing-attributes"
 publish = false
 version = "0.0.0"
 authors = ["Mark Van de Vyver <mark@taqtiqa.com>"]

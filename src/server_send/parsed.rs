@@ -125,9 +125,9 @@ pub fn parse_args(metadata: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let md = metadata.clone();
     let args = syn::parse_macro_input!(md as Args);
 
-    eprintln!("{}",args.vars.len());
+    // eprintln!("{}",args.vars.len());
 
-    eprintln!("{:?}", args);
+    // eprintln!("{:?}", args);
 
     for expr in &args.vars {
         match expr {

@@ -1,4 +1,4 @@
-use hyper_tracing_attributes::contracts;
+use http_tracing_attributes::contracts;
 
 #[contracts]
 #[precondition(struct)]
