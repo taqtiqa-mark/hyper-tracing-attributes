@@ -1,8 +1,8 @@
 [package]
 edition = "2021"
-name = "http-tracing-attributes"
+name = "tracing-attributes-http"
 publish = false
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Mark Van de Vyver <mark@taqtiqa.com>"]
 license = "Apache or MIT"
 readme = "README.md"
@@ -22,9 +22,8 @@ keywords = ["logging", "metrics", "profiling", "tracing"]
 proc-macro = true
 
 [dependencies]
-darling = "0.13"
+# darling = "0.13"
 opentelemetry = { version = "0.17.0", features = ["rt-tokio", "trace"], optional = false }
-# opentelemetry-jaeger = { version = "0.16.0", features = ["reqwest_collector_client","rt-tokio"], optional = false }
 proc-macro-error = "1"
 proc-macro2 = "1"
 quote = "1"
@@ -32,13 +31,14 @@ syn = { version = "1", features = ["extra-traits", "full"] }
 tracing = { version = "0.1", features = ["std"], optional = false }
 tracing-core = { version = "0.1", default-features = false, optional = false }
 # tracing-log = { version = "0.1", default-features = false, optional = false }
-tracing-subscriber = { version = "0.3", features = ["std", "env-filter"], optional = false }
 tracing-tree = { version = "0.2", default-features = false, optional = false }
 
 
 [dev-dependencies]
+hyper = { version = "0.14", features = ["full", "trace"] }
 trybuild = "1"
 tokio = { version = "1", features = ["full", "tracing"] }
+opentelemetry-jaeger = { version = "0.16.0", features = ["reqwest_collector_client","rt-tokio"], optional = false }
 
 [features]
 # Nothing by default
@@ -57,3 +57,25 @@ path = "tests/contracts.rs"
 [[test]]
 name = "server_send"
 path = "tests/server_send.rs"
+
+[[example]]
+name = "client_json_tracing_json"
+path = "examples/client_json_tracing_json.rs"
+required-features = ["full",
+    "tracing/max_level_trace",
+    ]
+
+[[example]]
+name = "client_json_tracing_off"
+path = "examples/client_json_tracing_off.rs"
+required-features = ["full",
+    "tracing/max_level_off",
+    "log/max_level_off",
+    ]
+
+[[example]]
+name = "client_json_tracing_otel"
+path = "examples/client_json_tracing_otel.rs"
+required-features = ["full",
+    "trace",
+    ]

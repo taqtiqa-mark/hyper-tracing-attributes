@@ -21,23 +21,43 @@ pub fn codegen(ir: Ir) -> Rust {
 
     let flds: Vec<syn::ExprAssign> = fields.into_iter().map(|p| p.expr).collect();
     let stmts = &block.stmts;
-    // let skp: Vec<syn::Lit> = skip.elems.into_iter().map(|s| {
-    //     let syn::ExprLit { attrs, lit} = s;
-    //     lit }).collect();
-    let skp: Vec<syn::Expr> = skip.elems.into_iter().map(|s| s).collect();
 
+    // When no skip values are given, do not insert `skip(...)`
+    let mut skip_tokens = quote::quote!();
+    if !skip.elems.is_empty() {
+        let skp: Vec<syn::Expr> = skip.elems.into_iter().map(|s| s).collect();
+        skip_tokens = quote::quote!(
+            skip(#(#skp),*),
+        );
+    }
     let code = syn::parse_quote! {
         #(#attrs)*
         #[cfg_attr(feature = "tracing",
             tracing::instrument(level = #level,
                                 name = #name,
-                                skip(
-                                    #(#skp),*
-                                ),
-                                fields( //Custom
+                                #skip_tokens
+                                fields( // Custom
                                         #(#flds ,)*
-                                        //
-                                        otel.name           = "Server::parse",
+                                        // Standardized (OpenTelemetry)
+                                        otel.name           = #name,
+                                        otel.kind           = ?opentelemetry::trace::SpanKind::Server,
+                                        otel.status_code    = ?opentelemetry::trace::StatusCode::Unset,
+                                        otel.status_message = tracing::field::Empty,
+                                        otel.library.name   = "tracing-attributes-http",
+                                        // OTel required (HTTP)
+                                        http.host     = tracing::field::Empty,
+                                        http.method   = tracing::field::Empty,
+                                        http.scheme   = tracing::field::Empty,
+                                        http.target   = tracing::field::Empty,
+                                        http.url      = tracing::field::Empty,
+                                        net.peer.ip   = tracing::field::Empty,
+                                        net.peer.name = tracing::field::Empty,
+                                        net.peer.port = tracing::field::Empty,
+                                        // OTel optional (HTTP)
+                                        http.flavor                 = tracing::field::Empty,
+                                        http.request_content_length = tracing::field::Empty,
+                                        // OTel optional (General)
+                                        net.transport = "IP.TCP",
 
                                 )
                         )
@@ -46,7 +66,6 @@ pub fn codegen(ir: Ir) -> Rust {
             #(#stmts)*
         }
     };
-    eprintln!("{}", code);
     code
 }
 
