@@ -1,7 +1,6 @@
 [package]
 edition = "2021"
 name = "tracing-attributes-http"
-publish = false
 version = "0.1.0"
 authors = ["Mark Van de Vyver <mark@taqtiqa.com>"]
 license = "Apache or MIT"

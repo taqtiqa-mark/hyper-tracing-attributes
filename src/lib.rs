@@ -1,3 +1,7 @@
+//! Procedural macro attributes for instrumenting functions with [`tracing`], in
+//! HTTP use cases, following the [`opentelemetry`] conventions.
+//!
+
 use proc_macro::TokenStream;
 use proc_macro_error::proc_macro_error;
 
