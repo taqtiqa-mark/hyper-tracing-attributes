@@ -9,8 +9,13 @@ use crate::server_send::{lower::Field, Ir};
 pub type Rust = TokenStream;
 
 pub fn codegen(ir: Ir) -> Rust {
-
-    let Ir { fields, item, level, name, skip } = ir;
+    let Ir {
+        fields,
+        item,
+        level,
+        name,
+        skip,
+    } = ir;
 
     let ItemFn {
         attrs,
@@ -34,9 +39,8 @@ pub fn codegen(ir: Ir) -> Rust {
         #(#attrs)*
         #[cfg_attr(feature = "tracing",
             tracing::instrument(level = #level,
-                                name = #name,
                                 #skip_tokens
-                                fields( // Custom
+                                fields( // Custom via `trace_field(...)`
                                         #(#flds ,)*
                                         // Standardized (OpenTelemetry)
                                         otel.name           = #name,
@@ -44,19 +48,29 @@ pub fn codegen(ir: Ir) -> Rust {
                                         otel.status_code    = ?opentelemetry::trace::StatusCode::Unset,
                                         otel.status_message = tracing::field::Empty,
                                         otel.library.name   = "tracing-attributes-http",
-                                        // OTel required (HTTP)
+                                        // OTel-HTTP required at span creation
                                         http.host     = tracing::field::Empty,
                                         http.method   = tracing::field::Empty,
                                         http.scheme   = tracing::field::Empty,
                                         http.target   = tracing::field::Empty,
                                         http.url      = tracing::field::Empty,
-                                        net.peer.ip   = tracing::field::Empty,
-                                        net.peer.name = tracing::field::Empty,
-                                        net.peer.port = tracing::field::Empty,
-                                        // OTel optional (HTTP)
-                                        http.flavor                 = tracing::field::Empty,
-                                        http.request_content_length = tracing::field::Empty,
-                                        // OTel optional (General)
+                                        // OTel-HTTP optional at span creation
+                                        http.flavor                               = tracing::field::Empty,
+                                        http.response_content_length_uncompressed = tracing::field::Empty,
+                                        http.response_content_length              = tracing::field::Empty,
+                                        http.response.header.content_type         = tracing::field::Empty,
+                                        http.status_code                          = tracing::field::Empty,
+                                        http.user_agent                           = tracing::field::Empty,
+                                        net.peer.ip                               = tracing::field::Empty,
+                                        net.peer.name                             = tracing::field::Empty,
+                                        net.peer.port                             = tracing::field::Empty,
+                                        // OTel-HTTP server semantics
+                                        http.server_name = tracing::field::Empty,
+                                        http.route       = tracing::field::Empty,
+                                        http.client_ip   = tracing::field::Empty,
+                                        net.host.name    = tracing::field::Empty,
+                                        net.host.port    = tracing::field::Empty,
+                                        // OTel-General optional
                                         net.transport = "IP.TCP",
 
                                 )
@@ -84,23 +98,25 @@ mod tests {
 
     #[test]
     fn output_is_function_item() {
-        let pq: syn::ExprAssign = parse_quote!(x=0);
-        let i = syn::parse2(quote::quote!(
+        let pq: syn::ExprAssign = parse_quote!(x = 0);
+        let i = syn::parse2(
+            quote::quote!(
                 fn f() {}
-            ).into()).expect("ItemFn");
-        let f = vec![Field {
-                expr: pq
-            }];
+            )
+            .into(),
+        )
+        .expect("ItemFn");
+        let f = vec![Field { expr: pq }];
         let l = syn::parse_quote!(Level::TRACE);
         let n = syn::parse_quote!("some_test");
-        let s = syn::parse_quote!([a,b,c]);
+        let s = syn::parse_quote!([a, b, c]);
         let ir = Ir {
-                fields: f,
-                item: i,
-                level: l,
-                name: n,
-                skip: s
-            };
+            fields: f,
+            item: i,
+            level: l,
+            name: n,
+            skip: s,
+        };
 
         let rust = codegen(ir);
 

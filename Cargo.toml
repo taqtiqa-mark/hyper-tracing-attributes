@@ -1,12 +1,12 @@
 [package]
 edition = "2021"
 name = "tracing-attributes-http"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Mark Van de Vyver <mark@taqtiqa.com>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/taqtiqa-mark/hyper-tracing-attributes"
-homepage = "https://github.com/taqtiqa-mark/hyper-tracing-attributes"
+repository = "https://github.com/taqtiqa-mark/tracing-attributes-http"
+homepage = "https://github.com/taqtiqa-mark/tracing-attributes-http"
 description = """
 HTTP primitives for application-level tracing.
 """
