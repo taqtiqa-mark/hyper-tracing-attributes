@@ -49,11 +49,12 @@ pub fn codegen(ir: Ir) -> Rust {
                                         otel.status_message = tracing::field::Empty,
                                         otel.library.name   = "tracing-attributes-http",
                                         // OTel-HTTP required at span creation
-                                        http.host     = tracing::field::Empty,
                                         http.method   = tracing::field::Empty,
                                         http.scheme   = tracing::field::Empty,
                                         http.target   = tracing::field::Empty,
                                         http.url      = tracing::field::Empty,
+                                        net.host.name = tracing::field::Empty,
+                                        net.host.port = tracing::field::Empty,
                                         // OTel-HTTP optional at span creation
                                         http.flavor                               = tracing::field::Empty,
                                         http.response_content_length_uncompressed = tracing::field::Empty,
@@ -68,8 +69,6 @@ pub fn codegen(ir: Ir) -> Rust {
                                         http.server_name = tracing::field::Empty,
                                         http.route       = tracing::field::Empty,
                                         http.client_ip   = tracing::field::Empty,
-                                        net.host.name    = tracing::field::Empty,
-                                        net.host.port    = tracing::field::Empty,
                                         // OTel-General optional
                                         net.transport = "IP.TCP",
 
