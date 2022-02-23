@@ -36,14 +36,11 @@ hyper = { version = "0.14", features = ["full"] }
 trybuild = "1"
 tokio = { version = "1", features = ["full", "tracing"] }
 opentelemetry-jaeger = { version = "0.16.0", features = ["reqwest_collector_client","rt-tokio"], optional = false }
+tracing-subscriber = "0.3"
 
 [features]
 # Nothing by default
 default = []
-
-[[test]]
-name = "contracts"
-path = "tests/contracts.rs"
 
 [[test]]
 name = "server_send"

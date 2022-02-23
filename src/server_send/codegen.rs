@@ -39,6 +39,7 @@ pub fn codegen(ir: Ir) -> Rust {
         #(#attrs)*
         #[cfg_attr(feature = "tracing",
             tracing::instrument(level = #level,
+                                // Let tracing create the default name.
                                 #skip_tokens
                                 fields( // Custom via `trace_field(...)`
                                         #(#flds ,)*

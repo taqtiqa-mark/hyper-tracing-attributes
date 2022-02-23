@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use http_tracing_attributes::server_send;
+use tracing_attributes_http::server_send;
 use tracing::Level;
 
 #[allow(unused_variables)]
