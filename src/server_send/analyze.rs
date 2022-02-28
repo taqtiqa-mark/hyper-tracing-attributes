@@ -17,9 +17,12 @@ pub fn analyze(ast: Ast, meta: Args) -> Model {
 
     let mut item = ast;
     let attrs = &mut item.attrs;
+    let stmnts = &mut item.block.stmts;
 
+    // Parse `[#trace_field(a="c")] attributes into `fields` vector.
     for index in (0..attrs.len()).rev() {
         if let Some(ident) = attrs[index].path.get_ident() {
+            eprintln!("{:?}", ident);
             let id = ident.to_string();
             if id.as_str() == "trace_field" {
                 let attr = attrs.remove(index);
@@ -29,6 +32,26 @@ pub fn analyze(ast: Ast, meta: Args) -> Model {
         }
     }
 
+    // Parse `TraceableError`. Error code is often at the end of a block - start there.
+    for index in (0..stmnts.len()).rev() {
+        let stmnt = &stmnts[index];
+        match stmnt {
+            syn::Stmt::Expr(_expr) => {
+                // eprintln!("Expr: {:?}", expr);
+            }
+            syn::Stmt::Item(_itm) => {
+                // eprintln!("Item: {:?}", itm);
+            }
+            syn::Stmt::Local(_lcl) => {
+                // eprintln!("Local: {:?}", lcl);
+            }
+            syn::Stmt::Semi(_expr, _tkn) => {
+                // eprintln!("Semi: {:?} {:?}", expr, tkn);
+            }
+        }
+    }
+
+    // Parse attribute `[#server_send(...)]`
     for expr in meta.vars {
         //eprintln!("Meta argument: {:#?}", expr);
         #[allow(clippy::single_match)]
@@ -36,25 +59,30 @@ pub fn analyze(ast: Ast, meta: Args) -> Model {
             syn::Expr::Assign(e) => {
                 //eprintln!("Meta Expr::Assign: left: {:#?} right: {:#?}", *e.left, *e.right);
                 if let syn::Expr::Path(ref el) = *e.left {
-                        let first = el.path.segments.first().unwrap();
-                        if first.arguments.is_empty() {
-                            let param = first.ident.to_string();
-                            //eprintln!("Meta Expr::Assign: left: {:#?}", param);
-                            match param.as_str() {
-                                "skip" => {
-                                    if let syn::Expr::Array(er) = *e.right { skip = er;}
+                    let first = el.path.segments.first().unwrap();
+                    if first.arguments.is_empty() {
+                        let param = first.ident.to_string();
+                        //eprintln!("Meta Expr::Assign: left: {:#?}", param);
+                        match param.as_str() {
+                            "skip" => {
+                                if let syn::Expr::Array(er) = *e.right {
+                                    skip = er;
                                 }
-                                "name" => {
-                                    if let syn::Expr::Lit(er) = *e.right { name = er;}
-                                }
-                                "level" => {
-                                    if let syn::Expr::Path(er) = *e.right { level = er;}
-                                }
-                                &_ => {}
                             }
+                            "name" => {
+                                if let syn::Expr::Lit(er) = *e.right {
+                                    name = er;
+                                }
+                            }
+                            "level" => {
+                                if let syn::Expr::Path(er) = *e.right {
+                                    level = er;
+                                }
+                            }
+                            &_ => {}
                         }
-                    };
-
+                    }
+                };
             }
             // syn::Expr::Path(ref expr) => {
             //     if expr.path.leading_colon.is_some() {
@@ -128,7 +156,7 @@ mod tests {
 
     #[test]
     fn can_extract_trace_field() {
-        let meta_args = Args { vars: vec![]} ;
+        let meta_args = Args { vars: vec![] };
 
         let model = analyze(
             parse_quote!(
@@ -184,10 +212,8 @@ mod tests {
     // Ensure attributes unrelated to this proc-macro are not removed or reordered
     #[test]
     fn non_dsl_attributes_are_preserved() {
-
         // let _ts = crate::utility::to_token_stream("#[server_send(level=tracing::Level::TRACE)]");
         // eprintln!("Token Stream{:#?}",ts);
-
 
         let model = analyze(
             parse_quote!(

@@ -1,12 +1,12 @@
 [package]
 edition = "2021"
 name = "tracing-attributes-http"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Mark Van de Vyver <mark@taqtiqa.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/taqtiqa-mark/tracing-attributes-http"
-homepage = "https://github.com/taqtiqa-mark/tracing-attributes-http"
+homepage = "https://docs.rs/tracing-attributes-http"
 description = """
 HTTP primitives for application-level tracing.
 """
@@ -15,32 +15,46 @@ categories = [
     "development-tools::profiling",
     "asynchronous",
 ]
-keywords = ["logging", "metrics", "profiling", "tracing"]
+keywords = ["logging", "metrics", "profiling", "telemetry", "tracing"]
+autoexamples = false
 
 [lib]
 proc-macro = true
 
 [dependencies]
-opentelemetry = { version = "0.17.0", features = ["rt-tokio", "trace"], optional = false }
+opentelemetry = { version = "0.17.0", features = ["rt-tokio", "trace"], optional = true }
 proc-macro-error = "1"
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "1", features = ["extra-traits", "full"] }
-tracing = { version = "0.1", features = ["std"], optional = false }
-tracing-core = { version = "0.1", default-features = false, optional = false }
-tracing-tree = { version = "0.2", default-features = false, optional = false }
-
+tracing = { version = "0.1", features = ["std","attributes"], optional = false }
+tracing-opentelemetry = { version = "0.17.0", optional = true }
+tracing-subscriber = "0.3"
 
 [dev-dependencies]
-hyper = { version = "0.14", features = ["full"] }
+hyper = { path = "./../hyper", version = "0.14", features = ["full"] }
+serde = { version = "1.0" }
 trybuild = "1"
 tokio = { version = "1", features = ["full", "tracing"] }
 opentelemetry-jaeger = { version = "0.16.0", features = ["reqwest_collector_client","rt-tokio"], optional = false }
-tracing-subscriber = "0.3"
+
+# [patch.crates-io]
+# hyper = { path = "./../hyper" }
 
 [features]
 # Nothing by default
 default = []
+# Fields specified as required in the OpenTelemetry specification
+http = []
+http-full= []
+# OpenTelemetry crate dependency and fields in the `otel.*` namespace
+otel = [
+  "opentelemetry",
+  "tracing-opentelemetry",
+  ]
+otel-tokio = ["otel", "opentelemetry/rt-tokio"]
+otel-tokio-current-thread = ["otel", "opentelemetry/rt-tokio-current-thread"]
+otel-async-std = ["otel", "opentelemetry/rt-async-std"]
 
 [[test]]
 name = "server_send"
@@ -49,21 +63,22 @@ path = "tests/server_send.rs"
 [[example]]
 name = "client_json_tracing_json"
 path = "examples/client_json_tracing_json.rs"
-required-features = ["full",
-    "tracing/max_level_trace",
+required-features = ["hyper/traceable",
+    "hyper/trace_trace",
     ]
 
 [[example]]
 name = "client_json_tracing_off"
 path = "examples/client_json_tracing_off.rs"
-required-features = ["full",
-    "tracing/max_level_off",
-    "log/max_level_off",
+required-features = [
+    "hyper/traceable",
+    "hyper/trace_off",
     ]
 
 [[example]]
-name = "client_json_tracing_otel"
-path = "examples/client_json_tracing_otel.rs"
-required-features = ["full",
-    "trace",
+name = "echo_trace"
+path = "examples/echo_trace.rs"
+required-features = [
+    "hyper/traceable",
+    "http",
     ]

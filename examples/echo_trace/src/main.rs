@@ -103,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let root_span = tracing::span!(tracing::Level::INFO, "root_span_echo").entered();
 
     // Generate a `tracing` "event".
-    info!(status = true, answer = 42, message = "first event");
+    info!(status = true, answer = 42i32, message = "first event");
 
     let addr = ([127, 0, 0, 1], 3000).into();
 

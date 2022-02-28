@@ -1,5 +1,5 @@
 //! Procedural macro attributes for instrumenting functions with [`tracing`], in
-//! HTTP use cases, following the [`opentelemetry`] conventions.
+//! HTTP use cases.
 //!
 
 use proc_macro::TokenStream;
@@ -12,15 +12,14 @@ mod utility;
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use tracing_attributes_http::*;
 ///
-/// #[server_send(level = tracing::Level::TRACE, name = "Server::encode", skip = [dst, msg])
-/// fn encode(mut msg: Encode<'_, Self::Outgoing>, dst: &mut Vec<u8>) -> crate::Result<Encoder> {
-///     ...
+/// #[server_send(level = tracing::Level::TRACE, name = "Server::encode", skip = [dst, msg])]
+/// fn traced(mut msg: String, dst: &mut Vec<u8>) {
+///     // ...
 /// }
 /// ```
-
 #[proc_macro_attribute]
 #[proc_macro_error]
 pub fn server_send(metadata: TokenStream, item: TokenStream) -> TokenStream {

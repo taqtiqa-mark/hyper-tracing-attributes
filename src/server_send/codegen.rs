@@ -27,6 +27,8 @@ pub fn codegen(ir: Ir) -> Rust {
     let flds: Vec<syn::ExprAssign> = fields.into_iter().map(|p| p.expr).collect();
     let stmts = &block.stmts;
 
+    // Inspect statements for a TraceableError path.
+
     // When no skip values are given, do not insert `skip(...)`
     let mut skip_tokens = quote::quote!();
     if !skip.elems.is_empty() {
@@ -37,42 +39,50 @@ pub fn codegen(ir: Ir) -> Rust {
     }
     let code = syn::parse_quote! {
         #(#attrs)*
-        #[cfg_attr(feature = "tracing",
+        #[cfg_attr(feature = "traceable",
             tracing::instrument(level = #level,
                                 // Let tracing create the default name.
                                 #skip_tokens
                                 fields( // Custom via `trace_field(...)`
                                         #(#flds ,)*
-                                        // Standardized (OpenTelemetry)
-                                        otel.name           = #name,
-                                        otel.kind           = ?opentelemetry::trace::SpanKind::Server,
-                                        otel.status_code    = ?opentelemetry::trace::StatusCode::Unset,
-                                        otel.status_message = tracing::field::Empty,
-                                        otel.library.name   = "tracing-attributes-http",
-                                        // OTel-HTTP required at span creation
-                                        http.method   = tracing::field::Empty,
-                                        http.scheme   = tracing::field::Empty,
-                                        http.target   = tracing::field::Empty,
-                                        http.url      = tracing::field::Empty,
-                                        net.host.name = tracing::field::Empty,
-                                        net.host.port = tracing::field::Empty,
-                                        // OTel-HTTP optional at span creation
-                                        http.flavor                               = tracing::field::Empty,
-                                        http.response_content_length_uncompressed = tracing::field::Empty,
-                                        http.response_content_length              = tracing::field::Empty,
-                                        http.response.header.content_type         = tracing::field::Empty,
-                                        http.status_code                          = tracing::field::Empty,
-                                        http.user_agent                           = tracing::field::Empty,
-                                        net.peer.ip                               = tracing::field::Empty,
-                                        net.peer.name                             = tracing::field::Empty,
-                                        net.peer.port                             = tracing::field::Empty,
-                                        // OTel-HTTP server semantics
-                                        http.server_name = tracing::field::Empty,
-                                        http.route       = tracing::field::Empty,
-                                        http.client_ip   = tracing::field::Empty,
-                                        // OTel-General optional
-                                        net.transport = "IP.TCP",
-
+                                        #[cfg(feature = "otel")]
+                                        {
+                                            // Standardized (OpenTelemetry)
+                                            otel.name           = #name,
+                                            // otel.kind           = ?opentelemetry::trace::SpanKind::Server,
+                                            // otel.status_code    = ?opentelemetry::trace::StatusCode::Unset,
+                                            otel.status_message = tracing::field::Empty,
+                                            otel.library.name   = "tracing-attributes-http",
+                                        }
+                                        #[cfg(any(feature = "http",feature = "http-full"))]
+                                        {
+                                            // OTel-HTTP required at span creation
+                                            http.method   = tracing::field::Empty,
+                                            http.scheme   = tracing::field::Empty,
+                                            http.target   = tracing::field::Empty,
+                                            http.url      = tracing::field::Empty,
+                                            net.host.name = tracing::field::Empty,
+                                            net.host.port = tracing::field::Empty,
+                                        }
+                                        #[cfg(feature = "http-full")]
+                                        {
+                                            // OTel-HTTP optional at span creation
+                                            http.flavor                               = tracing::field::Empty,
+                                            http.response_content_length_uncompressed = tracing::field::Empty,
+                                            http.response_content_length              = tracing::field::Empty,
+                                            http.response.header.content_type         = tracing::field::Empty,
+                                            http.status_code                          = tracing::field::Empty,
+                                            http.user_agent                           = tracing::field::Empty,
+                                            net.peer.ip                               = tracing::field::Empty,
+                                            net.peer.name                             = tracing::field::Empty,
+                                            net.peer.port                             = tracing::field::Empty,
+                                            // OTel-HTTP server semantics
+                                            http.server_name = tracing::field::Empty,
+                                            http.route       = tracing::field::Empty,
+                                            http.client_ip   = tracing::field::Empty,
+                                            // OTel-General optional
+                                            net.transport = "IP.TCP",
+                                        }
                                 )
                         )
                     )]
