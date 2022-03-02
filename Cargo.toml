@@ -59,6 +59,7 @@ otel-async-std = ["otel", "opentelemetry/rt-async-std"]
 [[test]]
 name = "server_send"
 path = "tests/server_send.rs"
+features = ["hyper/traceable"]
 
 [[example]]
 name = "client_json_tracing_json"

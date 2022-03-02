@@ -21,8 +21,8 @@ pub fn analyze(ast: Ast, meta: Args) -> Model {
 
     // Parse `[#trace_field(a="c")] attributes into `fields` vector.
     for index in (0..attrs.len()).rev() {
+        // Check path exists
         if let Some(ident) = attrs[index].path.get_ident() {
-            eprintln!("{:?}", ident);
             let id = ident.to_string();
             if id.as_str() == "trace_field" {
                 let attr = attrs.remove(index);
