@@ -1,6 +1,6 @@
 error: item is not a function
 
-         = help: `#[server_send]` can only be used on functions
+         = help: `#[server_send(...)]` can only be used on functions
 
  --> tests/ui/item-is-not-a-function.rs:4:1
   |

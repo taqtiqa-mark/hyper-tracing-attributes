@@ -9,23 +9,23 @@ pub fn lower(model: Model) -> Ir {
         item,
     } = model;
 
-    let assertions = trace_fields
+    let fields = trace_fields
         .into_iter()
-        .map(|expr| Assertion {
+        .map(|expr| Field {
             message: format!("violation of trace_field `{}`", quote!(#expr)),
             expr,
         })
         .collect();
 
-    Ir { assertions, item }
+    Ir { fields, item }
 }
 
 pub struct Ir {
-    pub assertions: Vec<Assertion>,
+    pub fields: Vec<Field>,
     pub item: ItemFn,
 }
 
-pub struct Assertion {
+pub struct Field {
     pub expr: Expr,
     pub message: String,
 }
@@ -54,9 +54,9 @@ mod tests {
 
         let ir = lower(model);
 
-        assert_eq!(1, ir.assertions.len());
+        assert_eq!(1, ir.fields.len());
 
-        let assertion = &ir.assertions[0];
+        let assertion = &ir.fields[0];
         let expected: Expr = parse_quote!(x);
         assert_eq!(expected, assertion.expr);
         assert_eq!("violation of trace_field `x`", assertion.message);

@@ -1,6 +1,6 @@
-error: this attribute takes no arguments
+error: this attribute takes from one to three assign arguments
 
-         = help: use `#[server_send]`
+         = help: use `#[server_send(level=Level::WARN, name="Name", skip=[a, b])]`
 
  --> tests/ui/has-expr-argument.rs:3:15
   |

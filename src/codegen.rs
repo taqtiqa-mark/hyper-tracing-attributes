@@ -2,12 +2,12 @@ use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_quote, ItemFn, Stmt};
 
-use crate::{lower::Assertion, Ir};
+use crate::{lower::Field, Ir};
 
 pub type Rust = TokenStream;
 
 pub fn codegen(ir: Ir) -> Rust {
-    let Ir { assertions, item } = ir;
+    let Ir { fields, item } = ir;
 
     let ItemFn {
         attrs,
@@ -19,15 +19,15 @@ pub fn codegen(ir: Ir) -> Rust {
     quote!(
         #(#attrs)*
         #vis #sig {
-            #(#assertions)*
+            #(#fields)*
             #block
         }
     )
 }
 
-impl ToTokens for Assertion {
+impl ToTokens for Field {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let Assertion { expr, message } = self;
+        let Field { expr, message } = self;
         let stmt: Stmt = parse_quote!(assert!(#expr, #message););
         stmt.to_tokens(tokens);
     }
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn output_is_function_item() {
         let ir = Ir {
-            assertions: vec![Assertion {
+            fields: vec![Field {
                 expr: parse_quote!(x),
                 message: "message".to_string(),
             }],

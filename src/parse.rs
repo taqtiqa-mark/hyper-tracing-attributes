@@ -5,8 +5,8 @@ use syn::{Expr, Item, ItemFn};
 pub type Ast = ItemFn;
 
 pub fn parse(args: TokenStream, item: TokenStream) -> Ast {
-    const ERROR: &str = "this attribute takes no arguments";
-    const HELP: &str = "use `#[server_send]`";
+    const ERROR: &str = "this attribute takes from one to three assign arguments";
+    const HELP: &str = "use `#[server_send(level=Level::WARN, name=\"Name\", skip=[a, b])]`";
 
     if !args.is_empty() {
         if let Ok(expr) = syn::parse2::<Expr>(args) {
@@ -25,7 +25,7 @@ pub fn parse(args: TokenStream, item: TokenStream) -> Ast {
             abort!(
                 item,
                 "item is not a function";
-                help = "`#[server_send]` can only be used on functions"
+                help = "`#[server_send(...)]` can only be used on functions"
             )
         }
         Err(_) => unreachable!(), // ?
