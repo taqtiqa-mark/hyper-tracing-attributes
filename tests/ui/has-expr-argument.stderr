@@ -1,0 +1,8 @@
+error: this attribute takes no arguments
+
+         = help: use `#[server_send]`
+
+ --> tests/ui/has-expr-argument.rs:3:15
+  |
+3 | #[server_send(true)]
+  |               ^^^^
